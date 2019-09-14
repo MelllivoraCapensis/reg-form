@@ -27,7 +27,8 @@
       <div class="col-12">
         <div class="form-group" id="customer-rubric-wrapper">
           <label class="form-label" for="customer-rubric">Рубрика</label>
-           <input class="form-control" id="customer-rubric-input" name="customer-rubric" placeholder="Введите рубрику" required>
+          <ul class="form-choice" id="customer-rubric-choice"></ul>
+           <input class="form-control" id="customer-rubric-input" name="customer-rubric" placeholder="Введите рубрику">
           <ul class="form-list d-none" id="customer-rubric-list">       
           </ul>
           <div class="form-validator"></div>

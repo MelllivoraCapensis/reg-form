@@ -18,7 +18,7 @@ class RegistrationModel extends Model{
 		self::$fields['email'] = new EmailField();
 		self::$fields['phone'] = new PhoneField();
 		self::$fields['city_id'] = new ForeignKey('city');
-		self::$fields['rubric_id'] = new ForeignKey('rubric');
+		self::$fields['rubric_ids'] = new TextField();
 
 		global $CONNECTION;
 		self::$connection = $CONNECTION;

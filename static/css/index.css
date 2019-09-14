@@ -27,6 +27,7 @@
 
 .form-choice {
 	display: flex;
+	flex-wrap: wrap;
 	width: 100%;
 
 	list-style: none;
@@ -34,6 +35,9 @@
 
 .form-choice-item{
 	position: relative;
+
+	margin-right: 20px;
+	margin-bottom: 20px;
 
 	display: inline-flex;
 	justify-content: space-between;

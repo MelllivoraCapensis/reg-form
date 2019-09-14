@@ -28,12 +28,8 @@
           <div class="form-group" id="doer-rubric-wrapper">
             <label class="form-label" for="doer-rubric">Рубрика</label>
             <ul class="form-choice" id="doer-rubric-choice">
-              <li class="form-choice-item">
-                <span class="form-choice-text">hello</span>
-                <span class="form-choice-close">&#10006</span>
-              </li>
             </ul>
-            <input class="form-control" id="doer-rubric-input" required name="doer-rubric" placeholder="Введите рубрику">
+            <input class="form-control" id="doer-rubric-input" placeholder="Введите рубрику">
             <ul class="form-list" id="doer-rubric-list"></ul>
             <div class="form-validator"></div>
           </div>

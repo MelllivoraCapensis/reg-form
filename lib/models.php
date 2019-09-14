@@ -103,11 +103,11 @@ class TextField extends Field {
 	public function is_valid($value) {
 		if(! parent::is_valid($value)) return false;
 
-		$value = strip_tags($value);
-		if(strlen($value) == 0) {
-			throw new Exception('The field is empty !!!');
-			return false;			
-		}
+		// $value = strip_tags($value);
+		// if(strlen($value) == 0) {
+		// 	throw new Exception('The field is empty !!!');
+		// 	return false;			
+		// }
 		return true;
 	}
 	

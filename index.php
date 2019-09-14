@@ -7,6 +7,8 @@ $CONNECTION = get_connection();
 
 require_once(__DIR__ . '\models.php');
 
+// var_dump($_POST);
+
 index_view();
 
 ?>

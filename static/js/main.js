@@ -14,11 +14,11 @@ $(document).ready(function(){
 		var parentHeadings = ["Родительская категория1", "Родительская категория2"]; //массив категорий для вывода в селект
 
 		if (!state.id) {
-		  return state.text;
+			return state.text;
 		}
 		var $state = $(
-		  '<span>' + state.text + ' <span class="parents">/ ' + parentHeadings[0] + ',&nbsp;' + parentHeadings[1] + '</span>' + '</span>'
-		);
+			'<span>' + state.text + ' <span class="parents">/ ' + parentHeadings[0] + ',&nbsp;' + parentHeadings[1] + '</span>' + '</span>'
+			);
 		return $state;
 	};
 	
@@ -35,66 +35,170 @@ $(document).ready(function(){
 });
 
 $(document).ready(function() {
+
+
+
 	$("#doer-tel").mask("(999) 999-9999");
 	$("#customer-tel").mask("(999) 999-9999");
 
-	$("#doer-tab form").on('submit', function(e) {
+	addUserFormScript('doer');
+	addUserFormScript('customer');
 
-	e.preventDefault();
+	function addUserFormScript(type) {
+		var cityWrapper = document.querySelector(
+		`#${type}-city-wrapper`);
+		var cityInput = document.querySelector(
+			`#${type}-city-input`);
+		var cityList = document.querySelector(
+			`#${type}-city-list`);
+		var rubricWrapper = document.querySelector(
+			`#${type}-rubric-wrapper`);
+		var rubricInput = document.querySelector(
+			`#${type}-rubric-input`);
+		var rubricList = document.querySelector(
+			`#${type}-rubric-list`);
+		var rubricChoice = document.querySelector(
+			`#${type}-rubric-choice`);
 
-	if(! validateEmail($("#doer-email").val())) {
-		$("#doer-email + .form-validator").html('Некорректный email');
-		$("#doer-email").addClass('error');
+		addResetErrors();
+
+		$(`#${type}-tab form`).on('submit', function(e) {
+			registerUser(e, type);
+		});
+
+		makeLiveSearch(cityInput, cityList, 
+			cityWrapper, 'city');
+		makeLiveSearch(rubricInput, rubricList,
+			rubricWrapper, 'rubric', rubricChoice);
 	}
-	else {
-		var xhr = new XMLHttpRequest();
-		var form = document.querySelector('#doer-tab form');
-		var data = new FormData(form);
-		xhr.open('POST', '');
-		xhr.send(data);
-		xhr.onreadystatechange = function() {
-			if(xhr.readyState == 4) {
-				if(xhr.status == 201) {
-					$("#modal-message").modal("show");
-					form.reset();
-				}
-				else {
-					$("#modal-error").modal("show");
-				}
-			}
-		}
-	}
-	});
 
-	$("#customer-tab form").on('submit', function(e) {
+	function registerUser (e, type) {
+		var rubricChoice = document.querySelector(
+			`#${type}-rubric-choice`);
 
 		e.preventDefault();
 
-		if(! validateEmail($("#customer-email").val())) {
-			$("#customer-email + .form-validator").html('Некорректный email');
-			$("#customer-email").addClass('error');
+		if(! validateEmail($(`#${type}-email`).val())) {
+			$(`#${type}-email + .form-validator`).html('Некорректный email');
+			$(`#${type}-email`).addClass('error');
+		}
+		else if(! getChosenRubrics(rubricChoice)) {
+			$(`#${type}-rubric-wrapper .form-validator`).html('Некорректная рубрика');
+			$(`#${type}-rubric-input`).addClass('error');
 		}
 		else {
 			var xhr = new XMLHttpRequest();
-			var form = document.querySelector('#customer-tab form');
+			var form = document.querySelector(`#${type}-tab form`);
 			var data = new FormData(form);
+			data.append(`${type}-rubric`, 
+				getChosenRubrics(rubricChoice) ? 
+				getChosenRubrics(rubricChoice) : '');
 			xhr.open('POST', '');
 			xhr.send(data);
+
 			xhr.onreadystatechange = function() {
 				if(xhr.readyState == 4) {
 					if(xhr.status == 201) {
 						$("#modal-message").modal("show");
 						form.reset();
+						$(".form-choice").html('');
 					}
 					else {
-						$("#modal-error").modal("show");
+						var response = JSON.parse(xhr.responseText);
+						var fieldsForValidation = [`${type}-city`, `${type}-rubric`];
+						fieldsForValidation.forEach(function(field) {
+							if(response.hasOwnProperty(field)) {
+								$(`#${field}-input`).addClass('error');
+								$(`#${field}-input ~ .form-validator`).html(
+									response[field]);
+							}
+						});
+						
 					}
 				}
 			}
 		}
-	});
+	}
 
-    function validateEmail(email) {
+	
+	function makeLiveSearch(input, list, wrapper, type, choiceBox = null) {
+		var START_MATCH_LEN = 3;
+
+		input.onfocus = update;
+
+		input.onkeyup = update;
+
+		window.addEventListener('click', function(e) {
+			list.addEventListener('click', function(e) {
+				e.stopPropagation();
+			});
+			if(e.target != input) {
+				list.classList.add('d-none');
+			}
+			
+		})
+
+		list.addEventListener('click', function(e) {
+			var title = e.target.innerHTML;
+			if(type == 'city') {
+				input.value = title;
+				list.classList.add('d-none');
+			}
+			else if(type == 'rubric') {
+				if(titleInBox(title, choiceBox)) return;
+				choiceBox.appendChild(createChoiceItem(
+					title));
+
+			}
+			
+		});
+		
+
+		function update() {
+			if(input.value.length >= START_MATCH_LEN) {
+				list.classList.remove('d-none');
+				insertOptions(type, input, list);
+			}
+			else {
+				list.classList.add('d-none');
+			}
+		}
+
+		function createChoiceItem(text) {
+			var item = document.createElement('li');
+			item.classList.add('form-choice-item');
+
+			var itemText = document.createElement('span');
+			itemText.classList.add('form-choice-text');
+			itemText.innerHTML = text;
+
+			var itemCloser = document.createElement('span');
+			itemCloser.classList.add('form-choice-close');
+			itemCloser.innerHTML = '&#10006';
+
+			itemCloser.onclick = function(e) {
+				item.closest('.form-choice')
+				.removeChild(item);
+			};
+
+			item.appendChild(itemText);
+			item.appendChild(itemCloser);
+
+			return item;
+		}
+		
+	}
+
+	function titleInBox(title, choiceBox) {
+		var items = choiceBox.querySelectorAll(
+			".form-choice-text");
+		for (item of items) {
+			if(item.innerHTML == title) return true;
+		}
+		return false;
+	}
+
+	function validateEmail(email) {
 		var re = /\S+@\S+\.\S+/;
 		return re.test(email);
 	}
@@ -118,82 +222,31 @@ $(document).ready(function() {
 		}
 	}
 
-	var customerCityWrapper = document.querySelector(
-		'#customer-city-wrapper');
-	var customerCityInput = document.querySelector(
-		'#customer-city-input');
-	var customerCityList = document.querySelector('#customer-city-list');
-	var customerRubricWrapper = document.querySelector(
-		'#customer-rubric-wrapper');
-	var customerRubricInput = document.querySelector(
-		'#customer-rubric-input');
-	var customerRubricList = document.querySelector(
-		'#customer-rubric-list');
-
-	var doerCityWrapper = document.querySelector(
-		'#doer-city-wrapper');
-	var doerCityInput = document.querySelector(
-		'#doer-city-input');
-	var doerCityList = document.querySelector('#doer-city-list');
-	var doerRubricWrapper = document.querySelector(
-		'#doer-rubric-wrapper');
-	var doerRubricInput = document.querySelector(
-		'#doer-rubric-input');
-	var doerRubricList = document.querySelector(
-		'#doer-rubric-list');
-
-	makeLiveSearch(customerCityInput, customerCityList, 
-		customerCityWrapper, 'city');
-	makeLiveSearch(customerRubricInput, customerRubricList,
-		customerRubricWrapper, 'rubric');
-
-	makeLiveSearch(doerCityInput, doerCityList, 
-		doerCityWrapper, 'city');
-	makeLiveSearch(doerRubricInput, doerRubricList,
-		doerRubricWrapper, 'rubric');
-
-	$(".form-choice-close").on('click', function(e) {
-		e.target.closest('.form-choice-item').style({'display': 'none'});
-	})
-
-
-
-
-
-
-	function makeLiveSearch(input, list, wrapper, type) {
-		var START_MATCH_LEN = 1;
-
-		input.onfocus = update;
-
-		input.onkeyup = update;
-
-		window.addEventListener('click', function(e) {
-			list.classList.add('d-none');
-		})
-
-		list.onclick = function(e) {
-			input.value = e.target.innerHTML;
-			list.classList.add('d-none');
+	function getChosenRubrics(choiceBox) {
+		var items = choiceBox.querySelectorAll(
+			'.form-choice-text');
+		if(items.length == 0) return false;
+		var arr=[];
+		for (item of items) {
+			arr.push(item.innerHTML);
 		}
-
-		wrapper.onclick = function(e) {			
-			e.stopPropagation();
-		}
-
-		function update() {
-			if(input.value.length >= START_MATCH_LEN) {
-				list.classList.remove('d-none');
-				insertOptions(type, input, list);
-			}
-			else {
-				list.classList.add('d-none');
-			}
-		}
-		
+		return arr.join('***');
 	}
 
+	function addResetErrors() {
+		var inputs = document.querySelectorAll(
+			'.form-control');
 
+		for (input of inputs) {
+			input.addEventListener('click', function(e) {
+				var validationElem = e.target.closest(
+					'.form-group').querySelector('.form-validator');
+				e.target.classList.remove('error');
+				validationElem.innerHTML = '';
+			})
+		}
+
+	}
 
 });
 

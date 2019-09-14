@@ -7,113 +7,18 @@ function index_view() {
 	$method = $_SERVER['REQUEST_METHOD'];
 
 	if($method == 'GET') {
-		render('templates/template.php', ['value' => 204]);
+		render('templates/template.php');
 	}
 	elseif($method == 'POST') {
 
 		if(array_key_exists('customer-email', $_POST)) {
-			try {
-				$post_data = get_data_from_post(['customer-email', 'customer-phone', 'customer-city', 'customer-rubric'], $_POST);
-
-			} catch (Exception $e) {
-				echo $e->getMessage();
-				die();
-			}
-			
-			$city_data = CityModel::filter('name', 'equals', $post_data['customer-city'])[0];
-
-			if(! $city_data) {
-				$MESSAGES['customer-city'] = 'Некорректное название города';
-				render('templates/template.php');
-				return;			
-			};
-
-			$city_id = intval($city_data['id']);
-
-			$rubric_data = RubricModel::filter('name', 'equals', $post_data['customer-rubric'])[0];
-			if(! $rubric_data) {
-				$MESSAGES['customer-rubric'] = 'Некорректное название рубрики';
-				render('templates/template.php');
-				return;	
-			};
-
-			$rubric_id = intval($rubric_data['id']);
-
-
-			try {
-
-				$customer = new CustomerRegistrationModel($post_data['customer-email'], $post_data['customer-phone'], $city_id, $rubric_id);
-				$customer->save();
-				http_response_code(201);
-				return;
-				
-			} catch (Exception $e) {
-				global $MESSAGES;
-				if(array_key_exists('email', $MESSAGES)) {
-					$MESSAGES['customer-email'] = $MESSAGES['email'];
-					unset($MESSAGES['email']);
-				};
-				if(array_key_exists('phone', $MESSAGES)) {
-					$MESSAGES['customer-phone'] = $MESSAGES['phone'];
-					unset($MESSAGES['phone']);
-				};
-
-			}
-			
+			handle_post_request('customer');
 		}
 		elseif(array_key_exists('doer-email', $_POST)) {
-
-			try {
-				$post_data = get_data_from_post(['doer-email', 'doer-phone', 'doer-city', 'doer-rubric'], $_POST);
-				
-			} catch (Exception $e) {
-				echo $e->getMessage();
-				die();
-			}
-			
-			$city_data = CityModel::filter('name', 'equals', $post_data['doer-city'])[0];
-			if(! $city_data) {
-				$MESSAGES['doer-city'] = 'Некорректное название города';
-				render('templates/template.php');
-				return;
-			};
-
-			$city_id = intval($city_data['id']);
-
-			$rubric_data = RubricModel::filter('name', 'equals', $post_data['doer-rubric'])[0];
-			if(! $rubric_data) {
-				$MESSAGES['doer-rubric'] = 'Некорректное название рубрики';
-				render('templates/template.php');
-				return;				
-			};
-
-			$rubric_id = intval($rubric_data['id']);
-
-			try {
-				$doer = new DoerRegistrationModel($post_data['doer-email'], $post_data['doer-phone'], $city_id, $rubric_id);
-
-				$doer->save();
-				http_response_code(201);
-				return;
-				
-			} catch (Exception $e) {
-				echo $e->getMessage();
-				global $MESSAGES;
-				if(array_key_exists('email', $MESSAGES)) {
-					$MESSAGES['doer-email'] = $MESSAGES['email'];
-					unset($MESSAGES['email']);
-				};
-				if(array_key_exists('phone', $MESSAGES)) {
-
-					$MESSAGES['doer-phone'] = $MESSAGES['phone'];
-					unset($MESSAGES['phone']);
-				};
-
-			}
-		
+			handle_post_request('doer');		
 		}
 		render('templates/template.php');
-		}
+	}
 	else {
 		http_response_code(405);
 		die();
@@ -121,5 +26,61 @@ function index_view() {
 
 }
 
+function handle_post_request($type) {
+	$models = ['customer' => CustomerRegistrationModel, 'doer' => DoerRegistrationModel];
+	try {
+		$post_data = get_data_from_post([$type . '-email', 
+			$type . '-phone', $type . '-city', $type . '-rubric'], $_POST);
+
+	} catch (Exception $e) {
+		http_response_code(403);
+		die();
+	}
+	
+	$city_data = CityModel::filter('name', 'equals', $post_data[$type . '-city'])[0];
+
+	if(! $city_data) {
+		$key = $type . '-city';
+		json_response([$key => 'Такого города нет в списке']);
+		die();
+	};
+
+	$city_id = intval($city_data['id']);
+
+	$rubrics = explode('***', $_POST[$type . '-rubric']);
+	$rubric_ids_arr = [];
+	foreach ($rubrics as $key => $rubric) {
+		$rubric_ids_arr[] = RubricModel::filter('name', 'equals', $rubric)[0]['id'];				
+	}
+
+	if(count($rubric_ids_arr) == 0 || $rubric_ids_arr == [null]) {
+		$key = $type . '-rubric';
+		json_response([$key => 'Таких рубрик нет в списке']);
+		die();
+	}
+	$rubric_ids = join('***', $rubric_ids_arr);
+
+	try {
+		$new_instance = new $models[$type](
+			$post_data[$type . '-email'], $post_data[$type . '-phone'],
+			$city_id, $rubric_ids);
+		$new_instance->save();
+		http_response_code(201);
+		die();
+		
+	} catch (Exception $e) {
+		global $MESSAGES;
+		if(array_key_exists('email', $MESSAGES)) {
+			$MESSAGES[$type . '-email'] = $MESSAGES['email'];
+			unset($MESSAGES['email']);
+		};
+		if(array_key_exists('phone', $MESSAGES)) {
+			$MESSAGES[$type . '-phone'] = $MESSAGES['phone'];
+			unset($MESSAGES['phone']);
+		};
+
+	}
+	
+}
 
 ?>
