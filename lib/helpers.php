@@ -11,13 +11,13 @@ function get_connection() {
 			$DB_USER_PASSWORD, $DB_NAME);
 
 	} catch (Exception $e) {
-		echo $e->getMessage();
-		return false;
+		http_response_code(500);
+		die();
 	}
 	return $connection;
 }
 
-function get_filtered_data($table, $field, $comparison, $value) {
+function get_filtered_data($table, $field, $comparison, $value, $limit) {
 	$comparison_array = [
 		'equals',
 		'contains',
@@ -37,20 +37,20 @@ function get_filtered_data($table, $field, $comparison, $value) {
 
 	if($comparison == 'startswith') {
 		$query = "SELECT * FROM " . $table . " WHERE upper(" . 
-		$field . ") LIKE '" . $value . "%'";
+		$field . ") LIKE '" . $value . "%' LIMIT " . $limit;
 	}
 
 	if($comparison == 'equals') {
 		$query = "SELECT * FROM " . $table . " WHERE upper(" . 
-		$field . ") LIKE '" . $value . "'";
+		$field . ") LIKE '" . $value . "' LIMIT " .	$limit;
 	}
 
 	$data = get_data($query);
 	return $data;		
 }
 
-
 function get_data($query) {
+
 	$connection = get_connection();
 	$result = $connection->query($query);
 
@@ -68,13 +68,16 @@ function get_data($query) {
 	return $data;
 }
 
-function get_data_from_post($fields, $post) {
+function get_data_from_post_or_403($fields, $post) {
+
 	$result = [];
+
 	foreach ($fields as $key => $field) {
 		if(! array_key_exists($field, $post)) {
-			throw new Exception($field . ' must be in $_POST');
-			return false;			
+			http_response_code(403);
+			die();			
 		}
+		
 		$result[$field] = $post[$field];
 	}
 	return $result;
@@ -92,6 +95,7 @@ function json_response($text) {
 	header('Access-Control-Allow-Credentials: true');
 	http_response_code(200);
 	echo json_encode($text, JSON_UNESCAPED_UNICODE);
+	die();
 }
 
 ?>

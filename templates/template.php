@@ -1,7 +1,5 @@
 <?php
 global $STATIC_DIR;
-global $MESSAGES;
-
 ?>
 <!DOCTYPE html>
 <html lang="ru">
@@ -14,7 +12,7 @@ global $MESSAGES;
     <meta name="format-detection" content="telephone=no"/>
     <meta content="IE=edge" http-equiv="X-UA-Compatible"/>
     <!-- build:css css/main.css-->
-  <!--   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous"> -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <link rel="stylesheet" href="<?= $STATIC_DIR ?>css/main.css"/>
     <link rel="stylesheet" href="<?= $STATIC_DIR ?>css/index.css"/>
     <!-- endbuild-->
@@ -56,11 +54,23 @@ global $MESSAGES;
             </div>
           </div>
         </div>
-         <div class="modal fade" id="modal-error" tabindex="-1" role="dialog" aria-label="Сообщение" aria-hidden="true">
+         <div class="modal fade" id="modal-server-error" tabindex="-1" role="dialog" aria-label="Сообщение" aria-hidden="true">
           <div class="modal-dialog modal-sm modal-dialog-centered">
             <div class="modal-content">
               <div class="modal-body">
-                <p>Введите корректные данные</p>
+                <p>Что то пошло не так, попробуйте позже</p>
+              </div>
+              <div class="modal-footer">
+                <button class="btn" data-dismiss="modal">Закрыть</button>
+              </div>
+            </div>
+          </div>
+        </div>
+         <div class="modal fade" id="modal-not-correct" tabindex="-1" role="dialog" aria-label="Сообщение" aria-hidden="true">
+          <div class="modal-dialog modal-sm modal-dialog-centered">
+            <div class="modal-content">
+              <div class="modal-body">
+                <p>Что то пошло не так, попробуйте позже</p>
               </div>
               <div class="modal-footer">
                 <button class="btn" data-dismiss="modal">Закрыть</button>

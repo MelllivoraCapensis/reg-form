@@ -3,7 +3,6 @@ require_once('helpers.php');
 
 abstract class Field {
 	public function __construct() {
-
 	}
 
 	public function is_valid($value) {
@@ -26,9 +25,6 @@ class IntField extends Field {
 		return true;
 	}
 
-	public function get_cleaned_value($value) {
-		return $value;
-	}
 }
 
 class ForeignKey extends IntField {
@@ -49,16 +45,9 @@ class ForeignKey extends IntField {
 
 		return true;
 	}
-
-	public function get_cleaned_value($value) {
-		return $value;
-	}
-
 }
 
-
 class EmailField extends TextField {
-
 
 	public function is_valid($value) {
 		global $MESSAGES;
@@ -69,7 +58,6 @@ class EmailField extends TextField {
 			return true;
 		}
 		else {
-			$MESSAGES['email'] = "Email is not valid";
 			throw new Exception("Email is not valid");
 			return false;
 		}
@@ -91,7 +79,6 @@ class PhoneField extends TextField {
 			return true;
 		}
 		else {
-			$MESSAGES['phone'] = "Phone is not valid";
 			throw new Exception("Phone is not valid");
 			return false;
 		}
@@ -103,11 +90,11 @@ class TextField extends Field {
 	public function is_valid($value) {
 		if(! parent::is_valid($value)) return false;
 
-		// $value = strip_tags($value);
-		// if(strlen($value) == 0) {
-		// 	throw new Exception('The field is empty !!!');
-		// 	return false;			
-		// }
+		$value = strip_tags($value);
+		if(strlen($value) == 0) {
+			throw new Exception('The field is empty !!!');
+			return false;			
+		}
 		return true;
 	}
 	
@@ -119,9 +106,9 @@ class TextField extends Field {
 class Model {
 	static protected $table_name;
 
-	public static function filter($field, $comparison, $value) {
+	public static function filter($field, $comparison, $value, $limit) {
 		$data = get_filtered_data(static::$table_name, $field,
-			$comparison, $value);
+			$comparison, $value, $limit);
 		return $data;
 	}
 
@@ -131,7 +118,4 @@ class Model {
 	}
 }
 
-
-
-
- ?>
+?>

@@ -8,41 +8,43 @@ $(document).ready(function(){
 			$(this).parent("li").addClass("active");
 		})
 	}
-
-	//Категории рубрик
-	function formatState (state) {
-		var parentHeadings = ["Родительская категория1", "Родительская категория2"]; //массив категорий для вывода в селект
-
-		if (!state.id) {
-			return state.text;
-		}
-		var $state = $(
-			'<span>' + state.text + ' <span class="parents">/ ' + parentHeadings[0] + ',&nbsp;' + parentHeadings[1] + '</span>' + '</span>'
-			);
-		return $state;
-	};
-	
-	//select2
-	if($(".select2").length) {
-		$(".select2").select2({
-			language: "ru",
-			placeholder: "Выберите рубрику",
-			closeOnSelect: false,
-			multiple: true,
-			templateResult: formatState,
-		});
-	}
 });
 
 $(document).ready(function() {
-
-
 
 	$("#doer-tel").mask("(999) 999-9999");
 	$("#customer-tel").mask("(999) 999-9999");
 
 	addUserFormScript('doer');
 	addUserFormScript('customer');
+
+	var counterBoxes = {
+		'customer':	{
+			'belarus_customer_counter':
+				document.querySelector('#belarus-customer-counter'),
+			'russia_customer_counter':
+				document.querySelector('#russia-customer-counter'),
+			'ukraine_customer_counter':
+				document.querySelector('#ukraine-customer-counter'),
+			'kazakhstan_customer_counter':
+				document.querySelector('#kazakhstan-customer-counter'),
+		},
+		'doer': {
+			'belarus_doer_counter': 
+				document.querySelector('#belarus-doer-counter'),
+			'russia_doer_counter':
+				document.querySelector('#russia-doer-counter'),
+			'ukraine_doer_counter':
+				document.querySelector('#ukraine-doer-counter'),
+			'kazakhstan_doer_counter':
+				document.querySelector('#kazakhstan-doer-counter'),
+		}
+		
+	};
+
+	updateCounters('customer');
+	updateCounters('doer');
+
 
 	function addUserFormScript(type) {
 		var cityWrapper = document.querySelector(
@@ -90,7 +92,7 @@ $(document).ready(function() {
 			var xhr = new XMLHttpRequest();
 			var form = document.querySelector(`#${type}-tab form`);
 			var data = new FormData(form);
-			data.append(`${type}-rubric`, 
+			data.append(`${type}-rubrics`, 
 				getChosenRubrics(rubricChoice) ? 
 				getChosenRubrics(rubricChoice) : '');
 			xhr.open('POST', '');
@@ -98,8 +100,20 @@ $(document).ready(function() {
 
 			xhr.onreadystatechange = function() {
 				if(xhr.readyState == 4) {
+					console.log(xhr.response);
 					if(xhr.status == 201) {
 						$("#modal-message").modal("show");
+						form.reset();
+						$(".form-choice").html('');
+						updateCounters(type);
+					}
+					else if(xhr.status == 500) {
+						$("#modal-server-error").modal("show");
+						form.reset();
+						$(".form-choice").html('');
+					}
+					else if(xhr.status == 403) {
+						$("#modal-bad-request").modal("show");
 						form.reset();
 						$(".form-choice").html('');
 					}
@@ -113,7 +127,6 @@ $(document).ready(function() {
 									response[field]);
 							}
 						});
-						
 					}
 				}
 			}
@@ -152,7 +165,6 @@ $(document).ready(function() {
 			}
 			
 		});
-		
 
 		function update() {
 			if(input.value.length >= START_MATCH_LEN) {
@@ -163,30 +175,30 @@ $(document).ready(function() {
 				list.classList.add('d-none');
 			}
 		}
-
-		function createChoiceItem(text) {
-			var item = document.createElement('li');
-			item.classList.add('form-choice-item');
-
-			var itemText = document.createElement('span');
-			itemText.classList.add('form-choice-text');
-			itemText.innerHTML = text;
-
-			var itemCloser = document.createElement('span');
-			itemCloser.classList.add('form-choice-close');
-			itemCloser.innerHTML = '&#10006';
-
-			itemCloser.onclick = function(e) {
-				item.closest('.form-choice')
-				.removeChild(item);
-			};
-
-			item.appendChild(itemText);
-			item.appendChild(itemCloser);
-
-			return item;
-		}
 		
+	}
+
+	function createChoiceItem(text) {
+		var item = document.createElement('li');
+		item.classList.add('form-choice-item');
+
+		var itemText = document.createElement('span');
+		itemText.classList.add('form-choice-text');
+		itemText.innerHTML = text;
+
+		var itemCloser = document.createElement('span');
+		itemCloser.classList.add('form-choice-close');
+		itemCloser.innerHTML = '&#10006';
+
+		itemCloser.onclick = function(e) {
+			item.closest('.form-choice')
+			.removeChild(item);
+		};
+
+		item.appendChild(itemText);
+		item.appendChild(itemCloser);
+
+		return item;
 	}
 
 	function titleInBox(title, choiceBox) {
@@ -205,8 +217,11 @@ $(document).ready(function() {
 
 	function insertOptions(type, input, list) {
 		var SELECT_SIZE = 5;
+		var QUERY_LIMIT = 10;
 		var xhr = new XMLHttpRequest();
-		xhr.open('GET', `/api.php?type=${type}&startswith=${input.value}`);
+		xhr.open('GET', `/api.php?type=${type}
+			&startswith=${input.value}
+			&limit=${QUERY_LIMIT}`);
 		xhr.send();
 		xhr.onreadystatechange = function() {
 			if(xhr.readyState == 4) {
@@ -245,8 +260,20 @@ $(document).ready(function() {
 				validationElem.innerHTML = '';
 			})
 		}
-
 	}
 
+	function updateCounters(type) {
+		var xhr = new XMLHttpRequest();
+		xhr.open('GET', `api.php?type=${type}&counters=true`);
+		xhr.send();
+		xhr.onreadystatechange = function() {
+			if(xhr.readyState == 4) {
+				var counterData = JSON.parse(xhr.responseText);
+				for (key in counterBoxes[type]) {
+					counterBoxes[type][key].innerHTML = counterData[key];
+				}
+			}
+		}
+	}
 });
 

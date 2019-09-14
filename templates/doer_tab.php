@@ -44,25 +44,25 @@
     <div class="row">
       <div class="col-12 col-sm-6 col-md-6 col-lg-3">
         <div class="country-block">
-          <div class="count">10 000</div>
+          <div class="count" id="belarus-doer-counter"></div>
           <div class="descr">Исполнителей из <span class="country">Беларуси</span></div>
         </div>
       </div>
       <div class="col-12 col-sm-6 col-md-6 col-lg-3">
         <div class="country-block">
-          <div class="count">12 000</div>
+          <div class="count" id="russia-doer-counter"></div>
           <div class="descr">Исполнителей из <span class="country">России</span></div>
         </div>
       </div>
       <div class="col-12 col-sm-6 col-md-6 col-lg-3">
         <div class="country-block">
-          <div class="count">5 000</div>
+          <div class="count" id="ukraine-doer-counter"></div>
           <div class="descr">Исполнителей из <span class="country">Украины</span></div>
         </div>
       </div>
       <div class="col-12 col-sm-6 col-md-6 col-lg-3">
         <div class="country-block">
-          <div class="count">2 000</div>
+          <div class="count" id="kazakhstan-doer-counter"></div>
           <div class="descr">Исполнителей из <span class="country">Казахстана</span></div>
         </div>
       </div>

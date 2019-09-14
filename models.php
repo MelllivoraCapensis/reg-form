@@ -45,17 +45,34 @@ class RegistrationModel extends Model{
 					$i ++;
 				}
 				else {
-					$obj->is_valid = false;
+					$obj->valid = false;
 					$obj->cleaned_data = null;
 					return;
 				}
-				
 			}
-			
-		
+			$obj->valid = true;
+	}
+
+	static public function get_registrations_by_country($country) {
+		$type = static::$type;
+		$query = "SELECT COUNT(*) as count FROM 
+			(SELECT " . $type . ".id as type_id, city.region_id as region_id
+				FROM " . $type . "_registration as " . $type . " JOIN city 
+				WHERE " . $type . ".city_id = city.id) as type
+			JOIN
+			(SELECT region.id as region_id, country.name as country, country.id as country_id 
+				FROM region JOIN country 
+				WHERE region.country_id = country.id) as regions
+			WHERE regions.region_id = type.region_id AND regions.country='" . $country . "'";
+		return get_data($query)[0]['count'];
+
 	}
 
 	static private function insert(self $obj) {
+		if(! $obj->valid) {
+			var_dump($obj);
+			throw new Exception("Not valid object");			
+		}
 
 		$query = "INSERT INTO " . static::$table_name . 
 			" (" . $obj->get_keys_str() . ") VALUE( " .
@@ -97,11 +114,13 @@ class RubricModel extends Model {
 
 class DoerRegistrationModel extends RegistrationModel {
 	static protected $table_name = 'doer_registration';
+	static protected $type = 'doer';
 
 }
 
 class CustomerRegistrationModel extends RegistrationModel {
 	static protected $table_name = 'customer_registration';
+	static protected $type = 'customer';
 
 }
 

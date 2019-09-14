@@ -28,7 +28,7 @@
         <div class="form-group" id="customer-rubric-wrapper">
           <label class="form-label" for="customer-rubric">Рубрика</label>
           <ul class="form-choice" id="customer-rubric-choice"></ul>
-           <input class="form-control" id="customer-rubric-input" name="customer-rubric" placeholder="Введите рубрику">
+           <input class="form-control" id="customer-rubric-input" placeholder="Введите рубрику">
           <ul class="form-list d-none" id="customer-rubric-list">       
           </ul>
           <div class="form-validator"></div>
@@ -44,25 +44,25 @@
   <div class="row">
     <div class="col-6 col-sm-6 col-md-6 col-lg-3">
       <div class="country-block">
-        <div class="count">10 000</div>
+        <div class="count" id="belarus-customer-counter"></div>
         <div class="descr">Заказчиков из <span class="country">Беларуси</span></div>
       </div>
     </div>
     <div class="col-6 col-sm-6 col-md-6 col-lg-3">
       <div class="country-block">
-        <div class="count">12 000</div>
+        <div class="count" id="russia-customer-counter"></div>
         <div class="descr">Заказчиков из <span class="country">России</span></div>
       </div>
     </div>
     <div class="col-6 col-sm-6 col-md-6 col-lg-3">
       <div class="country-block">
-        <div class="count">5 000</div>
+        <div class="count" id="ukraine-customer-counter"></div>
         <div class="descr">Заказчиков из <span class="country">Украины</span></div>
       </div>
     </div>
     <div class="col-6 col-sm-6 col-md-6 col-lg-3">
       <div class="country-block">
-        <div class="count">2 000</div>
+        <div class="count" id="kazakhstan-customer-counter"></div>
         <div class="descr">Заказчиков из <span class="country">Казахстана</span></div>
       </div>
     </div>
