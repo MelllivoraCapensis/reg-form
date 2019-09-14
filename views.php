@@ -36,7 +36,26 @@ function handle_post_request($type) {
 		http_response_code(403);
 		die();
 	}
-	
+
+	$city_id = get_city_id($post_data[$type . '-city']);
+
+	$rubric_ids = get_rubric_ids($post_data[$type . '-rubric']);	
+
+	try {
+		$new_instance = new $models[$type](
+			$post_data[$type . '-email'], $post_data[$type . '-phone'],
+			$city_id, $rubric_ids);
+		$new_instance->save();
+		http_response_code(201);
+		die();
+
+	} catch (Exception $e) {
+		json_response(['creating_error' => 'Что то пошло не так, попробуйте позже']);
+	}
+
+}
+
+function get_city_id($title) {
 	$city_data = CityModel::filter('name', 'equals', $post_data[$type . '-city'])[0];
 
 	if(! $city_data) {
@@ -47,8 +66,13 @@ function handle_post_request($type) {
 
 	$city_id = intval($city_data['id']);
 
-	$rubrics = explode('***', $_POST[$type . '-rubric']);
+	return $city_id;
+}
+
+function get_rubric_ids($ids_str) {
+	$rubrics = explode('***', $ids_str);
 	$rubric_ids_arr = [];
+
 	foreach ($rubrics as $key => $rubric) {
 		$rubric_ids_arr[] = RubricModel::filter('name', 'equals', $rubric)[0]['id'];				
 	}
@@ -60,27 +84,7 @@ function handle_post_request($type) {
 	}
 	$rubric_ids = join('***', $rubric_ids_arr);
 
-	try {
-		$new_instance = new $models[$type](
-			$post_data[$type . '-email'], $post_data[$type . '-phone'],
-			$city_id, $rubric_ids);
-		$new_instance->save();
-		http_response_code(201);
-		die();
-		
-	} catch (Exception $e) {
-		global $MESSAGES;
-		if(array_key_exists('email', $MESSAGES)) {
-			$MESSAGES[$type . '-email'] = $MESSAGES['email'];
-			unset($MESSAGES['email']);
-		};
-		if(array_key_exists('phone', $MESSAGES)) {
-			$MESSAGES[$type . '-phone'] = $MESSAGES['phone'];
-			unset($MESSAGES['phone']);
-		};
-
-	}
-	
+	return $rubric_ids;
 }
 
 ?>
