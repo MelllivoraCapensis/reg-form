@@ -20,7 +20,7 @@
           <div class="form-group" id="doer-city-wrapper">
             <label class="form-label" for="doer-city">Город</label>
             <input class="form-control" type="text" id="doer-city-input" name="doer-city" placeholder="Введите город" required>
-            <ul class="form-list" id="doer-city-list"></ul>
+            <ul class="form-list d-none" id="doer-city-list"></ul>
             <div class="form-validator"></div>
           </div>
         </div>
@@ -30,7 +30,7 @@
             <ul class="form-choice" id="doer-rubric-choice">
             </ul>
             <input class="form-control" id="doer-rubric-input" placeholder="Введите рубрику">
-            <ul class="form-list" id="doer-rubric-list"></ul>
+            <ul class="form-list d-none" id="doer-rubric-list"></ul>
             <div class="form-validator"></div>
           </div>
         </div>

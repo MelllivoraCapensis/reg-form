@@ -12,8 +12,10 @@ $(document).ready(function(){
 
 $(document).ready(function() {
 
-	$("#doer-tel").mask("(999) 999-9999");
-	$("#customer-tel").mask("(999) 999-9999");
+	$("#doer-tel").mask("(000) 000-0000", 
+		{'clearIfNotMatch': true});
+	$("#customer-tel").mask("(000) 000-0000",
+		{'clearIfNotMatch': true});
 
 	addUserFormScript('doer');
 	addUserFormScript('customer');

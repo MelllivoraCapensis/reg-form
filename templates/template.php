@@ -83,7 +83,7 @@ global $STATIC_DIR;
     </main>
     <script src="<?= $STATIC_DIR ?>/js/jquery-3.3.1.min.js"></script>
     <script src="<?= $STATIC_DIR ?>/js/core-dist.js"></script>
-    <script src="<?= $STATIC_DIR ?>/js/jquery.maskedinput.js"></script>
+    <script src="<?= $STATIC_DIR ?>/js/jquery.mask.js"></script>
     <script src="<?= $STATIC_DIR ?>/js/main.js"></script>
 
   </body>
