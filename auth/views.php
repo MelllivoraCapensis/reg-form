@@ -1,5 +1,5 @@
 <?php 
-require_once('..\lib\helpers.php');
+require_once('../lib/helpers.php');
 
 function login_view() {
 	global $_SERVER, $_SESSION;
@@ -13,7 +13,7 @@ function login_view() {
 	$method = $_SERVER['REQUEST_METHOD'];
 
 	if($method == 'GET') {
-		render('templates\login.php');
+		render('templates/login.php');
 	}
 	else if($method == 'POST') {
 		$auth_data = get_data_from_post_or_403(
@@ -23,7 +23,7 @@ function login_view() {
 			http_redirect('/admin.php');
 		}
 		else {
-			render('templates\login.php', ['auth_error' =>
+			render('templates/login.php', ['auth_error' =>
 				'Неправильная пара логин/пароль']);
 		}
 		
