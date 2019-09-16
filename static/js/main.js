@@ -17,6 +17,8 @@ $(document).ready(function() {
 	$("#customer-tel").mask("(000) 000-0000",
 		{'clearIfNotMatch': true});
 
+	addSlidingNavBar();
+
 	addUserFormScript('doer');
 	addUserFormScript('customer');
 
@@ -93,6 +95,7 @@ $(document).ready(function() {
 		else {
 			var xhr = new XMLHttpRequest();
 			var form = document.querySelector(`#${type}-tab form`);
+			var cityInput = document.querySelector(`#${type}-city-input`);
 			var data = new FormData(form);
 			data.append(`${type}-rubrics`, 
 				getChosenRubrics(rubricChoice) ? 
@@ -102,7 +105,6 @@ $(document).ready(function() {
 
 			xhr.onreadystatechange = function() {
 				if(xhr.readyState == 4) {
-					console.log(xhr.response);
 					if(xhr.status == 201) {
 						$("#modal-message").modal("show");
 						form.reset();
@@ -153,7 +155,7 @@ $(document).ready(function() {
 			
 		})
 
-		list.addEventListener('click', function(e) {
+		list.addEventListener('mouseup', function(e) {
 			var title = e.target.innerHTML;
 			if(type == 'city') {
 				input.value = title;
@@ -163,7 +165,6 @@ $(document).ready(function() {
 				if(titleInBox(title, choiceBox)) return;
 				choiceBox.appendChild(createChoiceItem(
 					title));
-
 			}
 			
 		});
@@ -227,11 +228,25 @@ $(document).ready(function() {
 		xhr.send();
 		xhr.onreadystatechange = function() {
 			if(xhr.readyState == 4) {
-				var data = JSON.parse(xhr.response);
+				if(xhr.responseText == '') {
+					var data = [];
+				}
+				else {
+					var data = JSON.parse(xhr.responseText);
+				}
+				
 				list.innerHTML = '';
 				data.forEach( function(element, index) {
 					var option = document.createElement('li');
-					option.innerHTML = element;
+					if(type == 'rubric') {
+							option.innerHTML = 
+					`${element['name']}/${element['parent_name']}`;
+					} 
+					else if(type == 'city') {
+						option.innerHTML = 
+							`${element['name']}/${element['region_name']}/${element['country_name']}`;
+					}
+				
 					list.appendChild(option);
 				});
 				list.size = Math.min(data.length, SELECT_SIZE);
@@ -243,9 +258,10 @@ $(document).ready(function() {
 		var items = choiceBox.querySelectorAll(
 			'.form-choice-text');
 		if(items.length == 0) return false;
-		var arr=[];
+		var arr = [];
 		for (item of items) {
-			arr.push(item.innerHTML);
+			arr.push(item.innerHTML.slice(0, 
+				item.innerHTML.indexOf('/')));
 		}
 		return arr.join('***');
 	}
@@ -275,6 +291,19 @@ $(document).ready(function() {
 					counterBoxes[type][key].innerHTML = counterData[key];
 				}
 			}
+		}
+	}
+
+	function addSlidingNavBar() {
+		var navContainer = document.querySelector('#nav-container')
+		var navBar = document.querySelector('#nav-bar');
+		var toggle = document.querySelector('#nav-toggle');
+		
+		toggle.onmouseover = function () {
+			navBar.classList.remove('d-none');
+		};
+		navContainer.onmouseleave = function () {
+			navBar.classList.add('d-none');
 		}
 	}
 });

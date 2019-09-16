@@ -7,7 +7,7 @@ require_once('lib/helpers.php');
 class RegistrationModel extends Model{
 	static protected $table_name;
 	static private $booted = false;
-	static private $connection = false;
+	static protected $connection = false;
 
 	static public $fields = [];
 
@@ -17,11 +17,11 @@ class RegistrationModel extends Model{
 
 		self::$fields['email'] = new EmailField();
 		self::$fields['phone'] = new PhoneField();
-		self::$fields['city_id'] = new ForeignKey('city');
-		self::$fields['rubric_ids'] = new TextField();
+		self::$fields['city_id'] = new CityField();
+		self::$fields['rubrics'] = new RubricField();
 
 		global $CONNECTION;
-		self::$connection = $CONNECTION;
+		self::$connection = get_connection();
 	}
 
 	function __construct(...$args) {
@@ -53,31 +53,22 @@ class RegistrationModel extends Model{
 			$obj->valid = true;
 	}
 
-	static public function get_registrations_by_country($country) {
-		$type = static::$type;
-		$query = "SELECT COUNT(*) as count FROM 
-			(SELECT " . $type . ".id as type_id, city.region_id as region_id
-				FROM " . $type . "_registration as " . $type . " JOIN city 
-				WHERE " . $type . ".city_id = city.id) as type
-			JOIN
-			(SELECT region.id as region_id, country.name as country, country.id as country_id 
-				FROM region JOIN country 
-				WHERE region.country_id = country.id) as regions
-			WHERE regions.region_id = type.region_id AND regions.country='" . $country . "'";
-		return get_data($query)[0]['count'];
-
+	static public function delete($id) {
+		self::$connection = self::$connection ? self::$connection :
+			get_connection();
+		$query = 'DELETE FROM ' . static::$table_name .
+			' WHERE id=' . $id;
+		self::$connection->query($query);
 	}
 
 	static private function insert(self $obj) {
 		if(! $obj->valid) {
-			var_dump($obj);
 			throw new Exception("Not valid object");			
 		}
 
 		$query = "INSERT INTO " . static::$table_name . 
 			" (" . $obj->get_keys_str() . ") VALUE( " .
 			$obj->get_values_str() . ")";
-
 
 		if(! self::$connection->query($query)) {
 			throw new Exception(self::$connection->error);
@@ -123,9 +114,4 @@ class CustomerRegistrationModel extends RegistrationModel {
 	static protected $type = 'customer';
 
 }
-
-
-
-
-
 ?>

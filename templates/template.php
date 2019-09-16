@@ -1,6 +1,8 @@
 <?php
 global $STATIC_DIR;
+require_once('lib\helpers.php');
 ?>
+
 <!DOCTYPE html>
 <html lang="ru">
   <head>
@@ -18,8 +20,14 @@ global $STATIC_DIR;
     <!-- endbuild-->
   </head>
   <body>
-    <main class="main-content" id="main-content">
-
+    <?php  ?>
+     <main class="main-content" id="main-content">
+      <section  id="nav-container">
+        <div class="d-none" id="nav-bar">
+           <?php render('templates/navbar.php', ['is_admin_page' => false]); ?>
+        </div>       
+        <img src="<?= $STATIC_DIR ?>images/icons/menu_icon.png" width="50" height="50" id="nav-toggle">
+      </section>      
       <section class="section section-step3" id="sign-up">
         <div class="container">
           <div class="row justify-content-between align-items-center">

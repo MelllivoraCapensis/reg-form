@@ -57,3 +57,23 @@
 	color: red;
 	cursor: pointer;
 }
+
+#nav-bar {
+	position: absolute;
+	left: 50px;
+	z-index: 10;
+}
+
+#nav-toggle {
+	position: absolute;
+	left: 0;
+	top: 0;
+	z-index: 10;
+
+	display: block;
+
+	padding: 5px;
+
+	color: white;
+
+}

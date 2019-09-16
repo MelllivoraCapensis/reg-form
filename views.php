@@ -1,6 +1,9 @@
 <?php
 
 require_once('models.php');
+require_once('lib/helpers.php');
+
+session_start();
 
 function index_view() {
 	global $_SERVER;
@@ -8,7 +11,8 @@ function index_view() {
 	$method = $_SERVER['REQUEST_METHOD'];
 
 	if($method == 'GET') {
-		render('templates/template.php');
+		render('templates/template.php', ['admin' => 
+		is_admin()]);
 	}
 	elseif($method == 'POST') {
 
@@ -23,6 +27,48 @@ function index_view() {
 		http_response_code(405);
 		die();
 	}
+
+}
+
+function admin_view() {
+	global $_SERVER;
+
+	$method = $_SERVER['REQUEST_METHOD'];
+
+	if($method == 'GET') {
+		if(!is_admin()) {
+			http_redirect('/auth/login.php');
+		}
+		$doers = DoerRegistrationModel::all();
+		$customers = CustomerRegistrationModel::all();
+		render('templates/admin.php', ['doers' => $doers,
+			'customers' => $customers]);
+		return;
+	}
+	else if($method == 'DELETE') {
+
+		$models = ['doer' => 'DoerRegistrationModel',
+			'customer' => 'CustomerRegistrationModel'];
+
+		if(!isset($_GET['id']) || !isset($_GET['type'])) {
+			http_response_code(403);
+		}
+
+		try {
+			$id = $_GET['id'];
+			$type = $_GET['type'];
+
+			$model = $models[$type];
+
+			$model::delete($id);
+
+			http_response_code(204);
+			
+		} catch (Exception $e) {
+			http_response_code(403);
+		}
+	}
+	
 }
 
 function handle_post_request($type) {
@@ -30,57 +76,26 @@ function handle_post_request($type) {
 
 	$post_data = get_data_from_post_or_403([$type . '-email', 
 			$type . '-phone', $type . '-city', $type . '-rubrics'], $_POST);
-
-	$city_id = get_city_id($post_data, $type);
-
-	$rubric_ids_str = get_rubric_ids_str($post_data, $type);
-
 	try {
 		$new_instance = new $models[$type](
 			$post_data[$type . '-email'], $post_data[$type . '-phone'],
-			$city_id, $rubric_ids_str);
+			get_city_id($post_data[$type . '-city']), $post_data[$type . '-rubrics']);
+
 		$new_instance->save();
 		http_response_code(201);
 		die();
 
 	} catch (Exception $e) {
-		// json_response($e);
+
+		if($e->getMessage() == 'not valid city') {
+
+			json_response([$type . '-city' => 'Некорректное значение']);
+		}
+		elseif($e->getMessage() == 'not valid rubric') {
+			json_response([$type . '-rubric' => 'Некорректное значение']);
+		}
 		http_response_code(500);
 	}
-}
-
-function get_city_id($post_data, $type) {
-	$city_data = CityModel::filter('name', 'equals', $post_data[$type . '-city'], 1)[0];
-
-	if(! $city_data) {
-		$key = $type . '-city';
-		json_response([$key => 'Такого города нет в списке']);
-		die();
-	};
-
-	$city_id = intval($city_data['id']);
-
-	return $city_id;
-}
-
-function get_rubric_ids_str($post_data, $type) {
-	$rubrics_str = $post_data[$type . '-rubrics'];
-	$rubrics_arr = explode('***', $rubrics_str);
-	$rubric_ids_arr = [];
-
-	foreach ($rubrics_arr as $key => $rubric) {
-		$rubric_ids_arr[] = RubricModel::filter('name', 'equals', $rubric, 1)[0]['id'];				
-	}
-
-	if(count($rubric_ids_arr) == 0 || $rubric_ids_arr == [null]) {
-		$key = $type . '-rubric';
-		json_response([$key => 'Таких рубрик нет в списке']);
-		die();
-	}
-
-	$rubric_ids_str = join('***', $rubric_ids_arr);
-
-	return $rubric_ids_str;
 }
 
 ?>

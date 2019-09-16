@@ -27,23 +27,39 @@ class IntField extends Field {
 
 }
 
-class ForeignKey extends IntField {
-
-	public function __construct($table) {
-		$this->table = $table;
-	}
+class CityField extends TextField {
 
 	public function is_valid($value) {
 		if(! parent::is_valid($value)) return false;
 
-		$data = get_data("SELECT * FROM " . $this->table .
-			" WHERE id =" . $value);
-		if(count($data) == 0) {
-			throw new Exception($value . ' is not valid id');
-			return false;			
+		return true;
+	}
+
+}
+
+class RubricField extends TextField {
+
+	public function is_valid($value) {
+		
+		if(! parent::is_valid($value)) return false;
+
+		$rubrics_arr = explode('***', $value);
+		
+		if($rubrics_arr == [null]) {
+			throw new Exception("not valid rubric");
+			return false;
 		}
 
-		return true;
+		foreach($rubrics_arr as $key => $rubric) {
+			$data = get_data("SELECT * FROM rubric
+				WHERE name ='" . $rubric . "'"); 
+			if(count($data) > 0) {
+				return true;
+			}
+
+		}
+		throw new Exception("not valid rubric");
+		return false;	
 	}
 }
 
@@ -89,12 +105,6 @@ class TextField extends Field {
 
 	public function is_valid($value) {
 		if(! parent::is_valid($value)) return false;
-
-		$value = strip_tags($value);
-		if(strlen($value) == 0) {
-			throw new Exception('The field is empty !!!');
-			return false;			
-		}
 		return true;
 	}
 	
@@ -113,7 +123,12 @@ class Model {
 	}
 
 	public static function all() {
-		$data = get_data("SELECT * FROM " . static::$table_name)[0];
+		$query = "SELECT type.id, type.email, type.phone, type.city as city, region.country_name as country, type.rubrics  FROM (SELECT type.id as id, type.email as email, type.phone as phone, city.name as city, type.rubrics as rubrics, city.region_id as region_id FROM " . static::$table_name . " as type JOIN 
+			city WHERE city.id=type.city_id) as type JOIN 
+			(SELECT region.id as id, country.name as country_name FROM
+			region JOIN country WHERE region.country_id=country.id) as region
+			WHERE type.region_id=region.id";
+		$data = get_data($query);
 		return $data;
 	}
 }
